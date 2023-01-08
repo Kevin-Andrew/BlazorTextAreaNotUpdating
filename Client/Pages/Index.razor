@@ -1,0 +1,105 @@
+﻿@page "/"
+
+<PageTitle>Index</PageTitle>
+
+<h1>Instructions</h1>
+<br/>
+<ol>
+    <li>Click one of the links below. A textarea and text box will be rendered with some initial text.</li>
+    <li>Click back and forth between each link. Notice that both textarea and text box will be populated
+        with, and change between, the initial/default values assigned to each link.
+    </li>
+    <li>Click the Method 1 link, then change the value of the text in the <b>textarea</b>.</li>
+    <li>Then click the Method 2 link. Notice that the text in the textarea did not get updated/changed
+        to the Method 2 text, as the text box did. This doesn't seem like correct behavior.
+    </li>
+</ol>
+
+<a href="./?method=method1">Method 1</a>
+<br />
+<a href="./?method=method2">Method 2</a>
+
+@if (!String.IsNullOrWhiteSpace(Method))
+{
+    <form>
+        @* In HTML, according to https://www.w3schools.com/tags/tag_textarea.asp, the text that is to be
+        displayed in the textarea should be placed between the opening and closing <textarea> tags. *@
+        <textarea rows="3" style="width: 350px;" @onchange="Text_OnChange">@GetData(Method)</textarea>
+        <br />
+        <input type="text" style="width: 350px;" value="@GetData(Method)" @onchange="Text_OnChange" />
+        <br/>
+        <br/>
+        @* If, however, we make the <textarea> similar to the <input type="text"> by specifying a 'value'
+        attribute, then the behavior matches that of the <input type="text">, as desired. However, according
+        to https://www.w3schools.com/tags/tag_textarea.asp, the <textarea> doesn't have/support a 'value'
+        attribute.
+        (Also, while this workaround happens to work in this simple sample, I have another project where
+        this workaround doesn't fix the problem.) *@
+        @* Uncomment the following code to text this workaround. *@
+        @*<textarea rows="3" style="width: 350px;" value="@GetData(Method)" @onchange="Text_OnChange"></textarea>*@
+    </form>
+}
+
+@code
+{
+    private Dictionary<string, string> cache = new Dictionary<string, string>
+    {
+        { "method1", "Initial value for method 1" },
+        { "method2", "Method 2 initial value." },
+    };
+
+    [Parameter, SupplyParameterFromQuery(Name = "method")]
+    public string? Method { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        return base.OnInitializedAsync();
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+    }
+
+    private void Text_OnChange(ChangeEventArgs e)
+    {
+        Console.WriteLine($"Text_OnChange: {e.Value}");
+
+        if (Method != null && cache.ContainsKey(Method))
+        {
+            cache[Method] = (string)e.Value!;
+        }
+    }
+
+    private string GetData(string key)
+    {
+        Console.WriteLine($"Data for {key} is: {cache[key]}");
+        return cache[key];
+    }
+
+
+
+
+    protected string? InputValue1 { get; set; }
+
+    protected void OnTextAreaInput1(ChangeEventArgs changeEventArgs)
+    {
+        var newValue = changeEventArgs.Value?.ToString() ?? string.Empty;
+
+        InputValue1 = newValue.Length > 4
+            ? "1234"
+            : InputValue1 = newValue;
+    }
+
+    private string inputvalue2 = String.Empty;
+    private string InputValue2
+    {
+        get { return inputvalue2; }
+        set
+        {
+            inputvalue2 = value.Length > 4
+                ? "1234"
+                : value;
+        }
+    }
+}
